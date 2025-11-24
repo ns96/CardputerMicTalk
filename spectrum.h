@@ -1,0 +1,533 @@
+const char spectrum_html[] PROGMEM = R"rawliteral(
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>M5 Spectrum Pro</title>
+    <style>
+        :root {
+            /* DARK THEME (Default) */
+            --bg-color: #111;
+            --panel-bg: #1a1a1a;
+            --text-color: #eee;
+            --accent-color: #333;
+            --border-color: #444;
+            
+            --grid-color: #333;
+            --bar-top: #ff3333;
+            --bar-mid: #ffff00;
+            --bar-bot: #00ff00;
+            --peak-color: #ffffff;
+            
+            --font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        [data-theme="light"] {
+            --bg-color: #f4f4f4;
+            --panel-bg: #ffffff;
+            --text-color: #333;
+            --accent-color: #ddd;
+            --border-color: #ccc;
+            --grid-color: #e0e0e0;
+            --bar-top: #d32f2f;
+            --bar-mid: #fbc02d;
+            --bar-bot: #388e3c;
+            --peak-color: #000;
+        }
+
+        [data-theme="blue"] {
+            --bg-color: #001e3c;
+            --panel-bg: #0a1929;
+            --text-color: #90caf9;
+            --accent-color: #1e4976;
+            --border-color: #1769aa;
+            --grid-color: #132f4c;
+            --bar-top: #00e5ff;
+            --bar-mid: #2979ff;
+            --bar-bot: #1565c0;
+            --peak-color: #00e5ff;
+        }
+
+        [data-theme="green"] {
+            --bg-color: #001000;
+            --panel-bg: #051a05;
+            --text-color: #00ff00;
+            --accent-color: #0a330a;
+            --border-color: #1b5e20;
+            --grid-color: #0f330f;
+            --bar-top: #ccff90;
+            --bar-mid: #69f0ae;
+            --bar-bot: #00c853;
+            --peak-color: #00ff00;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: var(--font-family);
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            width: 100vw;
+            transition: all 0.3s ease;
+            overflow: hidden;
+        }
+
+        /* TOOLBAR */
+        .toolbar {
+            background-color: var(--panel-bg);
+            padding: 10px 15px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            z-index: 100;
+            flex-shrink: 0; /* Prevent shrinking */
+        }
+
+        .control-group {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        label {
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            opacity: 0.7;
+        }
+
+        select, input[type="text"] {
+            background: var(--bg-color);
+            color: var(--text-color);
+            border: 1px solid var(--border-color);
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-family: inherit;
+            font-size: 0.8rem;
+            outline: none;
+        }
+
+        button {
+            background: var(--accent-color);
+            color: var(--text-color);
+            border: 1px solid var(--border-color);
+            padding: 4px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 0.75rem;
+            transition: 0.2s;
+        }
+        button:hover { filter: brightness(1.2); }
+
+        .status-light {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: #444;
+            margin-left: 5px;
+            box-shadow: inset 0 1px 2px rgba(0,0,0,0.5);
+            transition: all 0.3s;
+        }
+        .status-light.connected { background-color: #00e676; box-shadow: 0 0 8px #00e676; }
+        .status-light.error { background-color: #ff1744; box-shadow: 0 0 8px #ff1744; }
+
+        /* MAIN STAGE */
+        .stage {
+            flex-grow: 1;
+            position: relative;
+            width: 100%;
+            height: 0; /* Flex hack to force height calculation */
+            background: radial-gradient(circle at center, var(--panel-bg), var(--bg-color));
+        }
+
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+
+        .overlay {
+            position: absolute;
+            top: 5px;
+            right: 10px;
+            font-family: monospace;
+            font-size: 0.7rem;
+            opacity: 0.4;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="toolbar">
+        <div class="control-group">
+            <label>IP</label>
+            <input type="text" id="ipAddress" placeholder="192.168.1.X" style="width: 100px;">
+            <button onclick="toggleConnection()" id="connectBtn">LINK</button>
+            <div class="status-light" id="statusIndicator"></div>
+        </div>
+
+        <div class="control-group">
+            <label>Mode</label>
+            <select id="vizMode">
+                <option value="bars">Bars</option>
+                <option value="line">Line</option>
+                <option value="mirror">Mirror</option>
+            </select>
+        </div>
+
+        <div class="control-group">
+            <label>Gain</label>
+            <select id="gain">
+                <option value="1.0">1x</option>
+                <option value="2.0">2x</option>
+                <option value="4.0" selected>4x</option>
+                <option value="8.0">8x</option>
+                <option value="12.0">12x</option>
+            </select>
+        </div>
+
+        <div class="control-group">
+            <label>Decay</label>
+            <select id="smooth">
+                <option value="0.6">Fast</option>
+                <option value="0.8" selected>Normal</option>
+                <option value="0.9">Slow</option>
+                <option value="0.95">Fluid</option>
+            </select>
+        </div>
+
+        <div class="control-group">
+            <label>Theme</label>
+            <select id="themeSelector">
+                <option value="dark">Dark</option>
+                <option value="light">Light</option>
+                <option value="blue">Blue</option>
+                <option value="green">Green</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="stage" id="stage">
+        <canvas id="specCanvas"></canvas>
+        <div class="overlay">FFT: 64 BANDS // <span id="fps">0</span> FPS</div>
+    </div>
+
+    <script>
+        // --- CONFIG ---
+        const canvas = document.getElementById('specCanvas');
+        const ctx = canvas.getContext('2d', { alpha: false });
+        const ipInput = document.getElementById('ipAddress');
+        const connectBtn = document.getElementById('connectBtn');
+        const statusLight = document.getElementById('statusIndicator');
+        const themeSelector = document.getElementById('themeSelector');
+        
+        // --- TUNING SETTINGS ---
+        const numBars = 64; // UPDATED TO 64
+        const BASE_SENSITIVITY = 2000; 
+        
+        // LAYOUT PADDING
+        const PADDING_TOP = 20;    
+        const PADDING_BOTTOM = 10; 
+        
+        // State Arrays
+        let barValues = new Array(numBars).fill(0);
+        let peakValues = new Array(numBars).fill(0);
+        let peakHoldTime = new Array(numBars).fill(0);
+
+        // Network State
+        let isConnected = false;
+        let pollInterval = null;
+        let animFrame = null;
+        let lastTime = 0;
+        let frameCount = 0;
+        let lastFpsTime = 0;
+
+        // Auto-Detect IP
+        const isLocal = window.location.protocol === 'file:';
+        if (!isLocal) {
+            ipInput.value = window.location.hostname;
+            window.onload = connect; 
+        } else {
+            ipInput.value = "192.168.1.57";
+        }
+
+        // --- EVENTS ---
+        themeSelector.addEventListener('change', (e) => {
+            document.documentElement.setAttribute('data-theme', e.target.value);
+        });
+        window.addEventListener('resize', resizeCanvas);
+
+        function resizeCanvas() {
+            const stage = document.getElementById('stage');
+            const dpr = window.devicePixelRatio || 1;
+            canvas.width = stage.clientWidth * dpr;
+            canvas.height = stage.clientHeight * dpr;
+            ctx.scale(dpr, dpr);
+        }
+        resizeCanvas();
+
+        // --- CONNECTION ---
+        function toggleConnection() {
+            if (isConnected) disconnect(); else connect();
+        }
+
+        function connect() {
+            let ip = ipInput.value.trim();
+            if(!ip) ip = window.location.hostname;
+            connectBtn.innerText = "STOP";
+            isConnected = true;
+            statusLight.className = "status-light connected";
+
+            let url = (ip === window.location.hostname && !isLocal) ? '/data' : `http://${ip}/data`;
+
+            pollInterval = setInterval(() => {
+                fetch(url)
+                    .then(r => r.json())
+                    .then(json => computeFFT(json.data))
+                    .catch(e => {
+                        console.error(e);
+                        statusLight.className = "status-light error";
+                    });
+            }, 40);
+
+            loop(0);
+        }
+
+        function disconnect() {
+            clearInterval(pollInterval);
+            cancelAnimationFrame(animFrame);
+            isConnected = false;
+            connectBtn.innerText = "LINK";
+            statusLight.className = "status-light";
+            barValues.fill(0);
+            draw();
+        }
+
+        // --- DSP ENGINE ---
+        function computeFFT(waveform) {
+            const N = waveform.length;
+            const gain = parseFloat(document.getElementById('gain').value);
+            
+            for (let k = 0; k < numBars; k++) {
+                let real = 0;
+                let imag = 0;
+                
+                // UPDATED: Mapping for 64 bars on a 120-bin limit
+                // k goes 0-63. 
+                // (k + 1) * 1.5 maps approx to 1-96.
+                // This keeps us safe within N/2 (120) while covering the useful range.
+                let freqIndex = Math.floor((k + 1) * 1.5); 
+
+                for (let n = 0; n < N; n++) {
+                    const window = 0.5 * (1 - Math.cos((2 * Math.PI * n) / (N - 1)));
+                    const sample = waveform[n] * window;
+                    const angle = (2 * Math.PI * freqIndex * n) / N;
+                    real += sample * Math.cos(angle);
+                    imag += sample * Math.sin(angle);
+                }
+                
+                let mag = Math.sqrt(real * real + imag * imag);
+                let val = ((mag / N) * gain) / BASE_SENSITIVITY; 
+                
+                if (val > 1.0) val = 1.0;
+                if (val > barValues[k]) {
+                    barValues[k] = val;
+                }
+            }
+            statusLight.className = "status-light connected";
+        }
+
+        // --- ANIMATION LOOP ---
+        function loop(timestamp) {
+            if (!isConnected) return;
+
+            const dt = (timestamp - lastTime) / 1000;
+            lastTime = timestamp;
+
+            frameCount++;
+            if (timestamp - lastFpsTime >= 1000) {
+                document.getElementById('fps').innerText = frameCount;
+                frameCount = 0;
+                lastFpsTime = timestamp;
+            }
+
+            const decayRate = parseFloat(document.getElementById('smooth').value);
+            const gravity = 0.5 * dt; 
+
+            for (let i = 0; i < numBars; i++) {
+                barValues[i] *= decayRate;
+                if (barValues[i] < 0.01) barValues[i] = 0;
+
+                if (barValues[i] > peakValues[i]) {
+                    peakValues[i] = barValues[i];
+                    peakHoldTime[i] = 0.5; 
+                } else {
+                    if (peakHoldTime[i] > 0) {
+                        peakHoldTime[i] -= dt;
+                    } else {
+                        peakValues[i] -= gravity; 
+                    }
+                }
+                if (peakValues[i] < 0) peakValues[i] = 0;
+            }
+
+            draw();
+            animFrame = requestAnimationFrame(loop);
+        }
+
+        // --- RENDERER ---
+        function draw() {
+            const stage = document.getElementById('stage');
+            const w = stage.clientWidth;
+            const h = stage.clientHeight;
+            const mode = document.getElementById('vizMode').value;
+
+            ctx.clearRect(0, 0, w, h);
+            drawGrid(w, h);
+
+            if (mode === 'mirror') {
+                drawBars(w, h, true);
+            } else if (mode === 'line') {
+                drawLine(w, h);
+            } else {
+                drawBars(w, h, false);
+            }
+        }
+
+        function drawGrid(w, h) {
+            const styles = getComputedStyle(document.body);
+            ctx.strokeStyle = styles.getPropertyValue('--grid-color').trim();
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            
+            // Grid lines accounting for padding
+            const drawH = h - PADDING_TOP - PADDING_BOTTOM;
+            
+            for(let i=0; i<=10; i++) {
+                // Map 0-10 to padded area
+                let y = PADDING_TOP + (drawH/10) * i;
+                ctx.moveTo(0, y);
+                ctx.lineTo(w, y);
+            }
+            ctx.stroke();
+        }
+
+        function drawBars(w, h, mirrored) {
+            const styles = getComputedStyle(document.body);
+            const colTop = styles.getPropertyValue('--bar-top').trim();
+            const colMid = styles.getPropertyValue('--bar-mid').trim();
+            const colBot = styles.getPropertyValue('--bar-bot').trim();
+            const colPeak = styles.getPropertyValue('--peak-color').trim();
+
+            const gap = 2;
+            const totalBarW = w / numBars;
+            const barW = totalBarW - gap;
+            
+            // Use calculated draw area
+            const drawH = h - PADDING_TOP - PADDING_BOTTOM;
+
+            // Create Gradient
+            let grad = ctx.createLinearGradient(0, h, 0, 0);
+            if(mirrored) {
+                grad = ctx.createLinearGradient(0, h/2, 0, 0); 
+            }
+            grad.addColorStop(0, colBot);
+            grad.addColorStop(0.6, colMid);
+            grad.addColorStop(1, colTop);
+
+            ctx.fillStyle = grad;
+
+            for (let i = 0; i < numBars; i++) {
+                let val = barValues[i];
+                let peak = peakValues[i];
+                
+                let x = i * totalBarW + (gap/2);
+                
+                if (mirrored) {
+                    // Mirrored Mode ignores padding logic for simplicity (center is center)
+                    let barH = (val * h) / 2;
+                    let cy = h / 2;
+                    
+                    ctx.fillRect(x, cy - barH, barW, barH * 2);
+                    
+                    let peakH = (peak * h) / 2;
+                    ctx.fillStyle = colPeak;
+                    ctx.fillRect(x, cy - peakH - 2, barW, 2); 
+                    ctx.fillRect(x, cy + peakH, barW, 2);     
+                    ctx.fillStyle = grad; 
+
+                } else {
+                    // Classic Mode (Respects Padding)
+                    let barH = val * drawH;
+                    
+                    // Y position starts at bottom padding
+                    let y = h - PADDING_BOTTOM - barH;
+                    
+                    // Draw Bar
+                    ctx.fillRect(x, y, barW, barH);
+                    
+                    // Draw Peak
+                    let peakY = h - PADDING_BOTTOM - (peak * drawH);
+                    ctx.fillStyle = colPeak;
+                    ctx.fillRect(x, peakY - 2, barW, 2);
+                    ctx.fillStyle = grad;
+                }
+            }
+        }
+
+        function drawLine(w, h) {
+            const styles = getComputedStyle(document.body);
+            const colLine = styles.getPropertyValue('--bar-top').trim();
+            const colFill = styles.getPropertyValue('--bar-mid').trim(); 
+
+            const drawH = h - PADDING_TOP - PADDING_BOTTOM;
+            const bottomY = h - PADDING_BOTTOM;
+
+            ctx.beginPath();
+            ctx.moveTo(0, bottomY);
+
+            const step = w / (numBars - 1);
+
+            for (let i = 0; i < numBars; i++) {
+                let x = i * step;
+                let y = bottomY - (barValues[i] * drawH);
+                ctx.lineTo(x, y);
+            }
+            
+            ctx.lineTo(w, bottomY);
+            ctx.closePath();
+
+            ctx.save();
+            ctx.globalAlpha = 0.2;
+            ctx.fillStyle = colFill;
+            ctx.fill();
+            ctx.restore();
+
+            ctx.strokeStyle = colLine;
+            ctx.lineWidth = 3;
+            ctx.stroke();
+            
+            ctx.fillStyle = styles.getPropertyValue('--peak-color').trim();
+            for (let i = 0; i < numBars; i++) {
+                let x = i * step;
+                let y = bottomY - (peakValues[i] * drawH);
+                ctx.beginPath();
+                ctx.arc(x, y, 3, 0, Math.PI*2);
+                ctx.fill();
+            }
+        }
+    </script>
+</body>
+</html>
+)rawliteral";
