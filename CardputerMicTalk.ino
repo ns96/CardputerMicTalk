@@ -28,8 +28,8 @@
 #include "spectrum.h" // Spectrum Analyzer (/sv)
 
 // --- WI-FI SETTINGS (FALLBACK) ---
-String wifi_ssid = "SA906";
-String wifi_pass = "458C60F416";
+String wifi_ssid = "SSID_HERE";
+String wifi_pass = "WIFI_PASSWORD_HERE";
 
 // --- UI SETTINGS ---
 const int ui_x_pos = 150; // X position for REC/Battery info (120=Center, 150=Right)
