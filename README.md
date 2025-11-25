@@ -22,7 +22,7 @@ This project was developed by modifying the standard M5Stack microphone example 
 
 The system uses a **Client-Server Polling** architecture to ensure somewhat low latency (~30 ms) visualization on remote screens provided the number of clients is 5 or less, based on testing. 
 
-**Note:** If you use Chrome and want to make use of the data API for web pages not loaded directly from local filesystem (i.e using webserver) you will need to disable "Local Network Access Checks" under the "chrome://flags/" tab otherwise the connection will be blocked. Firefox doesn't seem to have this issue. 
+**Note:** If you use Chrome and want to make use of the data API for web pages not loaded directly from local filesystem (i.e using webserver) you will need to disable "[Local Network Access Checks](https://developer.chrome.com/blog/local-network-access)" under the "chrome://flags/" tab, otherwise the connection will be blocked. Firefox doesn't seem to have this issue. 
 
 ## Features
 
