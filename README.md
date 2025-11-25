@@ -22,7 +22,7 @@ This project was developed by modifying the standard M5Stack microphone example 
 
 The system uses a **Client-Server Polling** architecture to ensure somewhat low latency (~30 ms) visualization on remote screens provided the number of clients is 5 or less, based on testing. 
 
-**Note:** *If use Chrome and want to make use of the data API for web pages not loaded directly from local filesystem (i.e using webserver) you will need to disable "Local Network Access Checks" under the chrome://flags/ tab. Firefox doesn't seem to have the same issue. *
+**Note:** If you use Chrome and want to make use of the data API for web pages not loaded directly from local filesystem (i.e using webserver) you will need to disable "Local Network Access Checks" under the "chrome://flags/" tab otherwise the connection will be blocked. Firefox doesn't seem to have this issue. 
 
 ## Features
 
@@ -124,7 +124,7 @@ Once the device is running, it will display a red recording circle and its **IP 
 | **Button / Key**         | **Action** | **Description**                                                                                                                                      |
 | ------------------------ | ---------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **Btn G0 (Main Button)** | **HOLD**   | **Adjust Noise Filter (NF).** Increases the squelch floor to ignore background noise. Cycle wraps 0-255.                                             |
-| **Btn G0 (Main Button)** | **CLICK**  | **Playback.** Stops recording and plays the last ~3 seconds of audio through the speaker. For testing only.                                          |
+| **Btn G0 (Main Button)** | **CLICK**  | **Playback.** Stops recording and plays the last ~3 seconds of audio through the speaker. For Testing Only.                                          |
 | **Arrow Up / '; '**      | **PRESS**  | **Increase Scaling Factor (SF).** Boosts the signal sent to the web app (1x -> 12x).                                                                 |
 | **Arrow Down / '.'**     | **PRESS**  | **Decrease Scaling Factor (SF).** Lowers the signal gain.                                                                                            |
 | **Q**                    | **PRESS**  | **Display % CPU Usage.** Displays the relative % CPU usage based on a 100% being the main loop taking more than 40ms (25 frames/s on client) to run. |
