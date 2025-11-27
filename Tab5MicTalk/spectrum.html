@@ -3,82 +3,65 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>M5 Audio Console</title>
+    <title>M5 Spectrum Pro</title>
     <style>
         :root {
-            /* --- THEME DEFINITIONS --- */
-            
-            /* DARK (Default) */
-            --bg-color: #1a1a1a;
-            --panel-bg: #252525;
-            --text-color: #e0e0e0;
+            /* DARK THEME (Default) */
+            --bg-color: #111;
+            --panel-bg: #1a1a1a;
+            --text-color: #eee;
             --accent-color: #333;
             --border-color: #444;
             
-            /* Analog Meter Specifics */
-            --meter-face-1: #2a2a2a;
-            --meter-face-2: #111;
-            --meter-bezel: #444;
-            --meter-text: #ddd;
-            --meter-needle: #ff3333;
-            --meter-shadow: rgba(0,0,0,0.5);
-            
-            /* LED Meter Specifics */
-            --led-off: #222;
+            --grid-color: #333;
+            --bar-top: #ff3333;
+            --bar-mid: #ffff00;
+            --bar-bot: #00ff00;
+            --peak-color: #ffffff;
             
             --font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
 
         [data-theme="light"] {
-            --bg-color: #f0f2f5;
+            --bg-color: #f4f4f4;
             --panel-bg: #ffffff;
             --text-color: #333;
-            --accent-color: #e0e0e0;
+            --accent-color: #ddd;
             --border-color: #ccc;
-            
-            --meter-face-1: #fffbf0; /* Vintage Paper */
-            --meter-face-2: #f0e6d2;
-            --meter-bezel: #aaa;
-            --meter-text: #333;
-            --meter-needle: #cc0000;
-            --meter-shadow: rgba(0,0,0,0.2);
-            
-            --led-off: #e0e0e0;
+            --grid-color: #e0e0e0;
+            --bar-top: #d32f2f;
+            --bar-mid: #fbc02d;
+            --bar-bot: #388e3c;
+            --peak-color: #000;
         }
 
         [data-theme="blue"] {
-            --bg-color: #021019;
-            --panel-bg: #051e30;
-            --text-color: #4fc3f7;
-            --accent-color: #082840;
-            --border-color: #0d47a1;
-            
-            --meter-face-1: #052030;
-            --meter-face-2: #021019;
-            --meter-bezel: #0d47a1;
-            --meter-text: #00e5ff;
-            --meter-needle: #00e5ff;
-            --meter-shadow: rgba(0,229,255,0.2);
-            
-            --led-off: #062233;
+            --bg-color: #001e3c;
+            --panel-bg: #0a1929;
+            --text-color: #90caf9;
+            --accent-color: #1e4976;
+            --border-color: #1769aa;
+            --grid-color: #132f4c;
+            --bar-top: #00e5ff;
+            --bar-mid: #2979ff;
+            --bar-bot: #1565c0;
+            --peak-color: #00e5ff;
         }
 
         [data-theme="green"] {
-            --bg-color: #051405;
-            --panel-bg: #0c260c;
-            --text-color: #4caf50;
-            --accent-color: #1b5e20;
-            --border-color: #2e7d32;
-            
-            --meter-face-1: #0c260c;
-            --meter-face-2: #000;
-            --meter-bezel: #33691e;
-            --meter-text: #66bb6a;
-            --meter-needle: #00ff00;
-            --meter-shadow: rgba(0,255,0,0.1);
-            
-            --led-off: #122b12;
+            --bg-color: #001000;
+            --panel-bg: #051a05;
+            --text-color: #00ff00;
+            --accent-color: #0a330a;
+            --border-color: #1b5e20;
+            --grid-color: #0f330f;
+            --bar-top: #ccff90;
+            --bar-mid: #69f0ae;
+            --bar-bot: #00c853;
+            --peak-color: #00ff00;
         }
+
+        * { box-sizing: border-box; }
 
         body {
             background-color: var(--bg-color);
@@ -88,35 +71,36 @@
             display: flex;
             flex-direction: column;
             height: 100vh;
+            width: 100vw;
             transition: all 0.3s ease;
-            overflow: hidden; /* Prevent scrollbars */
+            overflow: hidden;
         }
 
-        /* Top Control Bar */
+        /* TOOLBAR */
         .toolbar {
             background-color: var(--panel-bg);
-            padding: 10px 20px;
+            padding: 10px 15px;
             border-bottom: 1px solid var(--border-color);
             display: flex;
-            gap: 15px;
+            gap: 10px;
             flex-wrap: wrap;
             align-items: center;
             justify-content: center;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
             z-index: 100;
+            flex-shrink: 0; /* Prevent shrinking */
         }
 
         .control-group {
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 5px;
         }
 
         label {
-            font-size: 0.75rem;
+            font-size: 0.7rem;
             font-weight: 700;
             text-transform: uppercase;
-            letter-spacing: 1px;
             opacity: 0.7;
         }
 
@@ -124,61 +108,45 @@
             background: var(--bg-color);
             color: var(--text-color);
             border: 1px solid var(--border-color);
-            padding: 6px 10px;
+            padding: 4px 8px;
             border-radius: 4px;
             font-family: inherit;
-            font-size: 0.9rem;
+            font-size: 0.8rem;
             outline: none;
-            transition: border-color 0.2s;
-        }
-        select:hover, input:hover { border-color: var(--text-color); }
-        input[type="text"] { width: 120px; text-align: center; }
-        
-        /* Checkbox Styling */
-        input[type="checkbox"] {
-            width: 16px;
-            height: 16px;
-            cursor: pointer;
-            accent-color: var(--text-color);
         }
 
         button {
             background: var(--accent-color);
             color: var(--text-color);
             border: 1px solid var(--border-color);
-            padding: 6px 20px;
+            padding: 4px 12px;
             border-radius: 4px;
             cursor: pointer;
             font-weight: bold;
-            font-size: 0.85rem;
-            transition: all 0.2s;
+            font-size: 0.75rem;
+            transition: 0.2s;
         }
-        button:hover { 
-            filter: brightness(1.2); 
-            transform: translateY(-1px);
-        }
-        button:active { transform: translateY(0); }
+        button:hover { filter: brightness(1.2); }
 
-        /* Status Dot */
         .status-light {
-            width: 10px;
-            height: 10px;
+            width: 8px;
+            height: 8px;
             border-radius: 50%;
             background-color: #444;
-            margin-left: 10px;
+            margin-left: 5px;
             box-shadow: inset 0 1px 2px rgba(0,0,0,0.5);
             transition: all 0.3s;
         }
         .status-light.connected { background-color: #00e676; box-shadow: 0 0 8px #00e676; }
         .status-light.error { background-color: #ff1744; box-shadow: 0 0 8px #ff1744; }
 
-        /* Canvas Area */
-        .meter-stage {
-            flex: 1;
+        /* MAIN STAGE */
+        .stage {
+            flex-grow: 1;
             position: relative;
             width: 100%;
-            height: 100%;
-            background: radial-gradient(circle at center, var(--bg-color), #000);
+            height: 0; /* Flex hack to force height calculation */
+            background: radial-gradient(circle at center, var(--panel-bg), var(--bg-color));
         }
 
         canvas {
@@ -187,13 +155,13 @@
             height: 100%;
         }
 
-        .overlay-fps {
+        .overlay {
             position: absolute;
-            bottom: 10px;
+            top: 5px;
             right: 10px;
             font-family: monospace;
             font-size: 0.7rem;
-            opacity: 0.3;
+            opacity: 0.4;
             pointer-events: none;
         }
     </style>
@@ -202,125 +170,130 @@
 
     <div class="toolbar">
         <div class="control-group">
-            <label>IP Address</label>
-            <input type="text" id="ipAddress" placeholder="192.168.1.X" value="192.168.1.57">
-            <button onclick="toggleConnection()" id="connectBtn">CONNECT</button>
+            <label>IP</label>
+            <input type="text" id="ipAddress" placeholder="192.168.1.X" style="width: 100px;">
+            <button onclick="toggleConnection()" id="connectBtn">LINK</button>
             <div class="status-light" id="statusIndicator"></div>
         </div>
 
         <div class="control-group">
             <label>Mode</label>
-            <select id="meterStyle" onchange="requestDraw()">
-                <option value="analog" selected>Analog Pro</option>
-                <option value="led">Digital LED</option>
+            <select id="vizMode">
+                <option value="bars">Bars</option>
+                <option value="line">Line</option>
+                <option value="mirror">Mirror</option>
             </select>
         </div>
 
         <div class="control-group">
             <label>Gain</label>
             <select id="gain">
-                <option value="0.5">0.5x</option>
-                <option value="1.0">1.0x</option>
-                <option value="2.0">2.0x</option>
-                <option value="4.0" selected>4.0x</option>
-                <option value="8.0">8.0x</option>
-                <option value="12.0">12.0x</option>
+                <option value="1.0">1x</option>
+                <option value="2.0">2x</option>
+                <option value="4.0" selected>4x</option>
+                <option value="8.0">8x</option>
+                <option value="12.0">12x</option>
             </select>
         </div>
 
-        <!-- CONTROLS FOR STEREO SIM -->
         <div class="control-group">
-            <label title="Add random variation to channels">Stereo Sim</label>
-            <input type="checkbox" id="stereoSim">
-            <select id="noiseAmt">
-                <option value="0.10">10%</option>
-                <option value="0.20" selected>20%</option>
-                <option value="0.30">30%</option>
-                <option value="0.40">40%</option>
+            <label>Decay</label>
+            <select id="smooth">
+                <option value="0.6">Fast</option>
+                <option value="0.8" selected>Normal</option>
+                <option value="0.9">Slow</option>
+                <option value="0.95">Fluid</option>
             </select>
         </div>
 
         <div class="control-group">
             <label>Theme</label>
             <select id="themeSelector">
-                <option value="dark">Studio Dark</option>
-                <option value="light">Vintage Light</option>
-                <option value="blue">Cyber Blue</option>
-                <option value="green">Matrix Green</option>
+                <option value="dark">Dark</option>
+                <option value="light">Light</option>
+                <option value="blue">Blue</option>
+                <option value="green">Green</option>
             </select>
         </div>
     </div>
 
-    <div class="meter-stage" id="stage">
-        <canvas id="vuCanvas"></canvas>
-        <div class="overlay-fps">RENDER: GPU // FPS: <span id="fps">--</span></div>
+    <div class="stage" id="stage">
+        <canvas id="specCanvas"></canvas>
+        <div class="overlay">FFT: 64 BANDS // <span id="fps">0</span> FPS</div>
     </div>
 
     <script>
-        // --- SYSTEM CONFIG ---
-        const canvas = document.getElementById('vuCanvas');
+        // --- CONFIG ---
+        const canvas = document.getElementById('specCanvas');
         const ctx = canvas.getContext('2d', { alpha: false });
         const ipInput = document.getElementById('ipAddress');
         const connectBtn = document.getElementById('connectBtn');
         const statusLight = document.getElementById('statusIndicator');
         const themeSelector = document.getElementById('themeSelector');
-        const stereoSimCheck = document.getElementById('stereoSim');
-        const noiseAmtSelect = document.getElementById('noiseAmt');
+        
+        // --- TUNING SETTINGS ---
+        const numBars = 64; // UPDATED TO 64
+        const BASE_SENSITIVITY = 2000; 
+        
+        // LAYOUT PADDING
+        const PADDING_TOP = 20;    
+        const PADDING_BOTTOM = 10; 
+        
+        // State Arrays
+        let barValues = new Array(numBars).fill(0);
+        let peakValues = new Array(numBars).fill(0);
+        let peakHoldTime = new Array(numBars).fill(0);
 
-        if (window.location.protocol !== 'file:') {
-            ipInput.value = window.location.hostname;
-        }
-
-        // --- APP STATE ---
+        // Network State
         let isConnected = false;
         let pollInterval = null;
         let animFrame = null;
         let lastTime = 0;
         let frameCount = 0;
         let lastFpsTime = 0;
-        
-        // Audio State
-        let volL = 0;
-        let volR = 0;
-        let targetVolL = 0;
-        let targetVolR = 0;
+
+        // Auto-Detect IP
+        const isLocal = window.location.protocol === 'file:';
+        if (!isLocal) {
+            ipInput.value = window.location.hostname;
+            window.onload = connect; 
+        } else {
+            ipInput.value = "192.168.1.59";
+        }
 
         // --- EVENTS ---
         themeSelector.addEventListener('change', (e) => {
             document.documentElement.setAttribute('data-theme', e.target.value);
-            requestDraw();
         });
-
         window.addEventListener('resize', resizeCanvas);
 
-        // --- INITIALIZATION ---
         function resizeCanvas() {
             const stage = document.getElementById('stage');
             const dpr = window.devicePixelRatio || 1;
             canvas.width = stage.clientWidth * dpr;
             canvas.height = stage.clientHeight * dpr;
             ctx.scale(dpr, dpr);
-            requestDraw();
         }
+        resizeCanvas();
 
-        // --- NETWORK LOGIC ---
+        // --- CONNECTION ---
         function toggleConnection() {
-            if (isConnected) disconnect();
-            else connect();
+            if (isConnected) disconnect(); else connect();
         }
 
         function connect() {
             let ip = ipInput.value.trim();
             if(!ip) ip = window.location.hostname;
-            
-            connectBtn.innerText = "DISCONNECT";
+            connectBtn.innerText = "STOP";
             isConnected = true;
             statusLight.className = "status-light connected";
 
+            let url = (ip === window.location.hostname && !isLocal) ? '/data' : `http://${ip}/data`;
+
             pollInterval = setInterval(() => {
-                fetch(`http://${ip}/data`)
+                fetch(url)
                     .then(r => r.json())
-                    .then(json => processData(json.data))
+                    .then(json => computeFFT(json.data))
                     .catch(e => {
                         console.error(e);
                         statusLight.className = "status-light error";
@@ -334,50 +307,53 @@
             clearInterval(pollInterval);
             cancelAnimationFrame(animFrame);
             isConnected = false;
-            connectBtn.innerText = "CONNECT";
+            connectBtn.innerText = "LINK";
             statusLight.className = "status-light";
-            volL = 0; volR = 0; targetVolL = 0; targetVolR = 0;
-            requestDraw();
+            barValues.fill(0);
+            draw();
         }
 
-        function processData(data) {
-            let maxVal = 0;
-            for (let v of data) {
-                if (Math.abs(v) > maxVal) maxVal = Math.abs(v);
-            }
-
+        // --- DSP ENGINE ---
+        function computeFFT(waveform) {
+            const N = waveform.length;
             const gain = parseFloat(document.getElementById('gain').value);
-            let baseVol = (maxVal * gain) / 18000;
             
-            // --- STEREO SIMULATION LOGIC ---
-            if (stereoSimCheck.checked) {
-                const noise = parseFloat(noiseAmtSelect.value);
-                const jitterL = (Math.random() - 0.5) * 2.0 * noise; 
-                const jitterR = (Math.random() - 0.5) * 2.0 * noise;
+            for (let k = 0; k < numBars; k++) {
+                let real = 0;
+                let imag = 0;
                 
-                targetVolL = baseVol + (baseVol * jitterL);
-                targetVolR = baseVol + (baseVol * jitterR);
-            } else {
-                targetVolL = baseVol;
-                targetVolR = baseVol;
+                // UPDATED: Mapping for 64 bars on a 120-bin limit
+                // k goes 0-63. 
+                // (k + 1) * 1.5 maps approx to 1-96.
+                // This keeps us safe within N/2 (120) while covering the useful range.
+                let freqIndex = Math.floor((k + 1) * 1.5); 
+
+                for (let n = 0; n < N; n++) {
+                    const window = 0.5 * (1 - Math.cos((2 * Math.PI * n) / (N - 1)));
+                    const sample = waveform[n] * window;
+                    const angle = (2 * Math.PI * freqIndex * n) / N;
+                    real += sample * Math.cos(angle);
+                    imag += sample * Math.sin(angle);
+                }
+                
+                let mag = Math.sqrt(real * real + imag * imag);
+                let val = ((mag / N) * gain) / BASE_SENSITIVITY; 
+                
+                if (val > 1.0) val = 1.0;
+                if (val > barValues[k]) {
+                    barValues[k] = val;
+                }
             }
-
-            if (targetVolL > 1.2) targetVolL = 1.2;
-            if (targetVolR > 1.2) targetVolR = 1.2;
-            if (targetVolL < 0) targetVolL = 0;
-            if (targetVolR < 0) targetVolR = 0;
-
             statusLight.className = "status-light connected";
         }
 
-        // --- PHYSICS LOOP ---
+        // --- ANIMATION LOOP ---
         function loop(timestamp) {
             if (!isConnected) return;
 
             const dt = (timestamp - lastTime) / 1000;
             lastTime = timestamp;
 
-            // FPS
             frameCount++;
             if (timestamp - lastFpsTime >= 1000) {
                 document.getElementById('fps').innerText = frameCount;
@@ -385,29 +361,28 @@
                 lastFpsTime = timestamp;
             }
 
-            // --- LEFT CHANNEL PHYSICS ---
-            const speed = 8.0; 
-            if (targetVolL > volL) {
-                volL += (targetVolL - volL) * speed * dt; // Attack
-            } else {
-                volL += (targetVolL - volL) * (speed * 0.6) * dt; // Decay
-            }
-            if (volL < 0.005) volL = 0;
+            const decayRate = parseFloat(document.getElementById('smooth').value);
+            const gravity = 0.5 * dt; 
 
-            // --- RIGHT CHANNEL PHYSICS ---
-            if (targetVolR > volR) {
-                volR += (targetVolR - volR) * speed * dt;
-            } else {
-                volR += (targetVolR - volR) * (speed * 0.6) * dt;
+            for (let i = 0; i < numBars; i++) {
+                barValues[i] *= decayRate;
+                if (barValues[i] < 0.01) barValues[i] = 0;
+
+                if (barValues[i] > peakValues[i]) {
+                    peakValues[i] = barValues[i];
+                    peakHoldTime[i] = 0.5; 
+                } else {
+                    if (peakHoldTime[i] > 0) {
+                        peakHoldTime[i] -= dt;
+                    } else {
+                        peakValues[i] -= gravity; 
+                    }
+                }
+                if (peakValues[i] < 0) peakValues[i] = 0;
             }
-            if (volR < 0.005) volR = 0;
 
             draw();
             animFrame = requestAnimationFrame(loop);
-        }
-
-        function requestDraw() {
-            if (!isConnected) draw();
         }
 
         // --- RENDERER ---
@@ -415,235 +390,142 @@
             const stage = document.getElementById('stage');
             const w = stage.clientWidth;
             const h = stage.clientHeight;
-            const style = document.getElementById('meterStyle').value;
+            const mode = document.getElementById('vizMode').value;
 
             ctx.clearRect(0, 0, w, h);
+            drawGrid(w, h);
 
-            if (style === 'led') {
-                // Keep LED stacked (Vertical list)
-                const splitH = h / 2;
-                drawLedMeter(0, 0, w, splitH, volL, "LEFT CHANNEL");
-                drawLedMeter(0, splitH, w, splitH, volR, "RIGHT CHANNEL");
+            if (mode === 'mirror') {
+                drawBars(w, h, true);
+            } else if (mode === 'line') {
+                drawLine(w, h);
             } else {
-                // Make Analog Side-by-Side (Horizontal list)
-                const splitW = w / 2;
-                drawFancyAnalog(0, 0, splitW, h, volL, "LEFT");
-                drawFancyAnalog(splitW, 0, splitW, h, volR, "RIGHT");
+                drawBars(w, h, false);
             }
         }
 
-        // --- COMPONENT: FANCY ANALOG METER ---
-        function drawFancyAnalog(x, y, w, h, val, label) {
-            const targetAspect = 1.8;
-            const margin = 20;
-            
-            if (w <= margin * 2 || h <= margin * 2) return;
-            
-            let meterW = w - (margin * 2);
-            let meterH = meterW / targetAspect;
-
-            if (meterH > h - (margin * 2)) {
-                meterH = h - (margin * 2);
-                meterW = meterH * targetAspect;
-            }
-
-            const mx = x + (w - meterW) / 2;
-            const my = y + (h - meterH) / 2;
-
+        function drawGrid(w, h) {
             const styles = getComputedStyle(document.body);
-            const colFace1 = styles.getPropertyValue('--meter-face-1').trim();
-            const colFace2 = styles.getPropertyValue('--meter-face-2').trim();
-            const colBezel = styles.getPropertyValue('--meter-bezel').trim();
-            const colText = styles.getPropertyValue('--meter-text').trim();
-            const colNeedle = styles.getPropertyValue('--meter-needle').trim();
-
-            ctx.save();
-
-            // 1. BEZEL
-            roundedRect(ctx, mx, my, meterW, meterH, 12);
-            let gradBezel = ctx.createLinearGradient(mx, my, mx, my + meterH);
-            gradBezel.addColorStop(0, colBezel);
-            gradBezel.addColorStop(0.5, "#666");
-            gradBezel.addColorStop(1, colBezel);
-            ctx.fillStyle = gradBezel;
-            ctx.fill();
-
-            // 2. FACE
-            const border = 6;
-            roundedRect(ctx, mx + border, my + border, meterW - (border*2), meterH - (border*2), 8);
-            let gradFace = ctx.createRadialGradient(
-                mx + meterW/2, my + meterH, 10, 
-                mx + meterW/2, my + meterH/1.5, meterW
-            );
-            gradFace.addColorStop(0, colFace1);
-            gradFace.addColorStop(1, colFace2);
-            ctx.fillStyle = gradFace;
-            ctx.fill();
-            ctx.strokeStyle = "rgba(0,0,0,0.3)";
-            ctx.lineWidth = 2;
+            ctx.strokeStyle = styles.getPropertyValue('--grid-color').trim();
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            
+            // Grid lines accounting for padding
+            const drawH = h - PADDING_TOP - PADDING_BOTTOM;
+            
+            for(let i=0; i<=10; i++) {
+                // Map 0-10 to padded area
+                let y = PADDING_TOP + (drawH/10) * i;
+                ctx.moveTo(0, y);
+                ctx.lineTo(w, y);
+            }
             ctx.stroke();
-
-            // 3. SCALE
-            const pivotX = mx + meterW / 2;
-            const pivotY = my + meterH * 0.85;
-            const radius = meterH * 0.75;
-            const startAngle = Math.PI * 1.2; 
-            const endAngle = Math.PI * 1.8;   
-            const totalAngle = endAngle - startAngle;
-
-            // 4. TICKS
-            ctx.strokeStyle = colText;
-            ctx.fillStyle = colText;
-            ctx.textAlign = "center";
-            ctx.textBaseline = "middle";
-            ctx.font = `bold ${meterW * 0.035}px sans-serif`;
-
-            const ticks = 10;
-            for (let i = 0; i <= ticks; i++) {
-                const pct = i / ticks;
-                const theta = startAngle + (pct * totalAngle);
-                
-                const isMajor = (i % 5 === 0);
-                const tickLen = isMajor ? meterH * 0.1 : meterH * 0.05;
-                
-                const x1 = pivotX + Math.cos(theta) * (radius - tickLen);
-                const y1 = pivotY + Math.sin(theta) * (radius - tickLen);
-                const x2 = pivotX + Math.cos(theta) * radius;
-                const y2 = pivotY + Math.sin(theta) * radius;
-
-                if (pct > 0.7) ctx.strokeStyle = "#ff3333";
-                else ctx.strokeStyle = colText;
-
-                ctx.lineWidth = isMajor ? 3 : 1.5;
-                ctx.beginPath();
-                ctx.moveTo(x1, y1);
-                ctx.lineTo(x2, y2);
-                ctx.stroke();
-
-                if (isMajor) {
-                    const labelDist = radius - tickLen - 15;
-                    const lx = pivotX + Math.cos(theta) * labelDist;
-                    const ly = pivotY + Math.sin(theta) * labelDist;
-                    
-                    let txt = "";
-                    if (i===0) txt = "-20";
-                    if (i===5) txt = "0";
-                    if (i===10) txt = "+3";
-                    
-                    ctx.fillStyle = (pct > 0.7) ? "#ff3333" : colText;
-                    ctx.fillText(txt, lx, ly);
-                }
-            }
-
-            // 5. LABEL
-            ctx.fillStyle = colText;
-            ctx.font = `bold ${meterW * 0.05}px sans-serif`;
-            ctx.fillText("VU", pivotX, my + meterH * 0.35);
-            
-            ctx.font = `${meterW * 0.03}px sans-serif`;
-            ctx.fillStyle = "#888";
-            ctx.fillText(label, pivotX, my + meterH * 0.5);
-
-            // 6. NEEDLE
-            let safeVal = Math.min(Math.max(val, 0), 1.2);
-            let needlePct = safeVal; 
-            if (needlePct > 1) needlePct = 1 + (safeVal-1)*0.5;
-
-            const needleAngle = startAngle + (needlePct * totalAngle);
-
-            ctx.save();
-            ctx.translate(5, 5);
-            drawNeedleShape(ctx, pivotX, pivotY, radius * 0.95, needleAngle, "rgba(0,0,0,0.3)");
-            ctx.restore();
-
-            drawNeedleShape(ctx, pivotX, pivotY, radius * 0.95, needleAngle, colNeedle);
-
-            ctx.beginPath();
-            ctx.arc(pivotX, pivotY, meterW * 0.03, 0, Math.PI*2);
-            let gradCap = ctx.createLinearGradient(pivotX, pivotY-10, pivotX, pivotY+10);
-            gradCap.addColorStop(0, "#666");
-            gradCap.addColorStop(1, "#111");
-            ctx.fillStyle = gradCap;
-            ctx.fill();
-
-            // 7. GLASS
-            ctx.globalCompositeOperation = "source-over";
-            let gradGlass = ctx.createLinearGradient(mx, my, mx, my + meterH * 0.6);
-            gradGlass.addColorStop(0, "rgba(255,255,255,0.1)");
-            gradGlass.addColorStop(1, "rgba(255,255,255,0)");
-            roundedRect(ctx, mx+border, my+border, meterW-(border*2), meterH*0.5, 6);
-            ctx.fillStyle = gradGlass;
-            ctx.fill();
-
-            ctx.restore();
         }
 
-        function drawNeedleShape(ctx, x, y, len, theta, color) {
-            ctx.save();
-            ctx.translate(x, y);
-            ctx.rotate(theta);
-            ctx.beginPath();
-            ctx.moveTo(0, -2);
-            ctx.lineTo(len, 0);
-            ctx.lineTo(0, 2);
-            ctx.closePath();
-            ctx.fillStyle = color;
-            ctx.fill();
-            ctx.restore();
-        }
-
-        // --- COMPONENT: LED METER ---
-        function drawLedMeter(x, y, w, h, val, label) {
+        function drawBars(w, h, mirrored) {
             const styles = getComputedStyle(document.body);
-            const colOff = styles.getPropertyValue('--led-off').trim();
-            const colText = styles.getPropertyValue('--text-color').trim();
+            const colTop = styles.getPropertyValue('--bar-top').trim();
+            const colMid = styles.getPropertyValue('--bar-mid').trim();
+            const colBot = styles.getPropertyValue('--bar-bot').trim();
+            const colPeak = styles.getPropertyValue('--peak-color').trim();
 
-            const pad = 20;
-            const meterW = w - (pad*2);
-            const meterH = h * 0.75;
-            const meterX = x + pad;
-            const meterY = y + (h - meterH)/2;
-
-            ctx.fillStyle = colText;
-            ctx.font = "bold 12px sans-serif";
-            ctx.textAlign = "left";
-            ctx.fillText(label, meterX, meterY - 8);
-
-            const segs = 40;
             const gap = 2;
-            const segW = (meterW / segs) - gap;
+            const totalBarW = w / numBars;
+            const barW = totalBarW - gap;
+            
+            // Use calculated draw area
+            const drawH = h - PADDING_TOP - PADDING_BOTTOM;
 
-            for(let i=0; i<segs; i++) {
-                const px = meterX + i * (segW + gap);
-                const pct = i / segs;
+            // Create Gradient
+            let grad = ctx.createLinearGradient(0, h, 0, 0);
+            if(mirrored) {
+                grad = ctx.createLinearGradient(0, h/2, 0, 0); 
+            }
+            grad.addColorStop(0, colBot);
+            grad.addColorStop(0.6, colMid);
+            grad.addColorStop(1, colTop);
+
+            ctx.fillStyle = grad;
+
+            for (let i = 0; i < numBars; i++) {
+                let val = barValues[i];
+                let peak = peakValues[i];
                 
-                let col = colOff;
-                if (val > pct) {
-                    if (pct > 0.85) col = "#ff1744";
-                    else if (pct > 0.6) col = "#ffea00";
-                    else col = "#00e676";
-                }
+                let x = i * totalBarW + (gap/2);
+                
+                if (mirrored) {
+                    // Mirrored Mode ignores padding logic for simplicity (center is center)
+                    let barH = (val * h) / 2;
+                    let cy = h / 2;
+                    
+                    ctx.fillRect(x, cy - barH, barW, barH * 2);
+                    
+                    let peakH = (peak * h) / 2;
+                    ctx.fillStyle = colPeak;
+                    ctx.fillRect(x, cy - peakH - 2, barW, 2); 
+                    ctx.fillRect(x, cy + peakH, barW, 2);     
+                    ctx.fillStyle = grad; 
 
-                ctx.fillStyle = col;
-                ctx.fillRect(px, meterY, segW, meterH);
+                } else {
+                    // Classic Mode (Respects Padding)
+                    let barH = val * drawH;
+                    
+                    // Y position starts at bottom padding
+                    let y = h - PADDING_BOTTOM - barH;
+                    
+                    // Draw Bar
+                    ctx.fillRect(x, y, barW, barH);
+                    
+                    // Draw Peak
+                    let peakY = h - PADDING_BOTTOM - (peak * drawH);
+                    ctx.fillStyle = colPeak;
+                    ctx.fillRect(x, peakY - 2, barW, 2);
+                    ctx.fillStyle = grad;
+                }
             }
         }
 
-        function roundedRect(ctx, x, y, width, height, radius) {
-            ctx.beginPath();
-            ctx.moveTo(x + radius, y);
-            ctx.lineTo(x + width - radius, y);
-            ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
-            ctx.lineTo(x + width, y + height - radius);
-            ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
-            ctx.lineTo(x + radius, y + height);
-            ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
-            ctx.lineTo(x, y + radius);
-            ctx.quadraticCurveTo(x, y, x + radius, y);
-            ctx.closePath();
-        }
+        function drawLine(w, h) {
+            const styles = getComputedStyle(document.body);
+            const colLine = styles.getPropertyValue('--bar-top').trim();
+            const colFill = styles.getPropertyValue('--bar-mid').trim(); 
 
-        resizeCanvas();
+            const drawH = h - PADDING_TOP - PADDING_BOTTOM;
+            const bottomY = h - PADDING_BOTTOM;
+
+            ctx.beginPath();
+            ctx.moveTo(0, bottomY);
+
+            const step = w / (numBars - 1);
+
+            for (let i = 0; i < numBars; i++) {
+                let x = i * step;
+                let y = bottomY - (barValues[i] * drawH);
+                ctx.lineTo(x, y);
+            }
+            
+            ctx.lineTo(w, bottomY);
+            ctx.closePath();
+
+            ctx.save();
+            ctx.globalAlpha = 0.2;
+            ctx.fillStyle = colFill;
+            ctx.fill();
+            ctx.restore();
+
+            ctx.strokeStyle = colLine;
+            ctx.lineWidth = 3;
+            ctx.stroke();
+            
+            ctx.fillStyle = styles.getPropertyValue('--peak-color').trim();
+            for (let i = 0; i < numBars; i++) {
+                let x = i * step;
+                let y = bottomY - (peakValues[i] * drawH);
+                ctx.beginPath();
+                ctx.arc(x, y, 3, 0, Math.PI*2);
+                ctx.fill();
+            }
+        }
     </script>
 </body>
 </html>

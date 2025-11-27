@@ -1,4 +1,3 @@
-const char index_html[] PROGMEM = R"rawliteral(
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -285,7 +284,7 @@ const char index_html[] PROGMEM = R"rawliteral(
             // AUTO CONNECT ON LOAD IF ON NETWORK
             window.onload = connect; 
         } else {
-            ipInput.value = "192.168.1.57"; // Default for local testing
+            ipInput.value = "192.168.1.59"; // Default for local testing
         }
 
         // --- APP STATE ---
@@ -614,43 +613,6 @@ const char index_html[] PROGMEM = R"rawliteral(
             ctx.restore();
         }
 
-        // --- COMPONENT: LED METER ---
-        function drawLedMeter(x, y, w, h, val, label) {
-            const styles = getComputedStyle(document.body);
-            const colOff = styles.getPropertyValue('--led-off').trim();
-            const colText = styles.getPropertyValue('--text-color').trim();
-
-            const pad = 20;
-            const meterW = w - (pad*2);
-            const meterH = h * 0.75;
-            const meterX = x + pad;
-            const meterY = y + (h - meterH)/2;
-
-            ctx.fillStyle = colText;
-            ctx.font = "bold 12px sans-serif";
-            ctx.textAlign = "left";
-            ctx.fillText(label, meterX, meterY - 8);
-
-            const segs = 40;
-            const gap = 2;
-            const segW = (meterW / segs) - gap;
-
-            for(let i=0; i<segs; i++) {
-                const px = meterX + i * (segW + gap);
-                const pct = i / segs;
-                
-                let col = colOff;
-                if (val > pct) {
-                    if (pct > 0.85) col = "#ff1744";
-                    else if (pct > 0.6) col = "#ffea00";
-                    else col = "#00e676";
-                }
-
-                ctx.fillStyle = col;
-                ctx.fillRect(px, meterY, segW, meterH);
-            }
-        }
-
         function roundedRect(ctx, x, y, width, height, radius) {
             ctx.beginPath();
             ctx.moveTo(x + radius, y);
@@ -669,4 +631,3 @@ const char index_html[] PROGMEM = R"rawliteral(
     </script>
 </body>
 </html>
-)rawliteral";

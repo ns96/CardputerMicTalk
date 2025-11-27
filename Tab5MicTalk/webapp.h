@@ -204,7 +204,6 @@ const char index_html[] PROGMEM = R"rawliteral(
     <div class="toolbar">
         <div class="control-group">
             <label>IP Address</label>
-            <!-- AUTO-DETECTS HOSTNAME IF EMPTY -->
             <input type="text" id="ipAddress" placeholder="192.168.1.X">
             <button onclick="toggleConnection()" id="connectBtn">CONNECT</button>
             <div class="status-light" id="statusIndicator"></div>
@@ -230,7 +229,16 @@ const char index_html[] PROGMEM = R"rawliteral(
             </select>
         </div>
 
-        <!-- CONTROLS FOR STEREO SIM -->
+        <div class="control-group">
+            <label>Decay</label>
+            <select id="decay">
+                <option value="15.0">Fast</option>
+                <option value="8.0" selected>Normal</option>
+                <option value="4.0">Slow</option>
+                <option value="2.0">Fluid</option>
+            </select>
+        </div>
+
         <div class="control-group">
             <label title="Add random variation to channels">Stereo Sim</label>
             <input type="checkbox" id="stereoSim">
@@ -397,8 +405,10 @@ const char index_html[] PROGMEM = R"rawliteral(
                 lastFpsTime = timestamp;
             }
 
+            // Retrieve Smoothing Speed
+            const speed = parseFloat(document.getElementById('decay').value);
+
             // --- LEFT CHANNEL PHYSICS ---
-            const speed = 8.0; 
             if (targetVolL > volL) {
                 volL += (targetVolL - volL) * speed * dt; // Attack
             } else {
