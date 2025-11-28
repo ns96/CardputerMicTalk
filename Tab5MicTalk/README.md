@@ -20,7 +20,7 @@ This project was developed by modifying the standard M5Stack microphone example 
 
 ## System Architecture
 
-The system uses a **Client-Server Polling** architecture to ensure somewhat low latency (~30 ms) visualization on remote screens provided the number of clients is 15 or less, based on testing. 
+The system uses a **Client-Server Polling** architecture to ensure somewhat low latency (~30 ms) visualization on remote screens provided the number of clients is 20 or less, based on testing. 
 
 **Note:** If you use Chrome and want to make use of the data API for web pages not loaded directly from local filesystem (i.e using webserver) you will need to disable "[Local Network Access Checks](https://developer.chrome.com/blog/local-network-access)" under the "chrome://flags/" tab, otherwise the connection will be blocked. Firefox doesn't seem to have this issue. 
 
@@ -121,13 +121,13 @@ Once the device is running, it will display **IP Address** and battery level on 
 
 ### Touchscreen Buttons
 
-| **Button**    | **Action** | **Description**                                                                                                                                                                                     |
-| ------------- | ---------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **NOISE FLT** | **PRESS**  | **Adjust Noise Filter (NF).** Increases the squelch floor to ignore background noise. Cycle wraps 0-255.                                                                                            |
-| **PLAY**      | **PRESS**  | **Playback.** Stops recording and plays the last ~3 seconds of audio through the speaker (*bug -- currently does not work*).                                                                        |
-| **SCALE +**   | **PRESS**  | **Increase Scaling Factor (SF).** Boosts the signal sent to the web app (1x -> 12x).                                                                                                                |
-| **SCALE -**   | **PRESS**  | **Decrease Scaling Factor (SF).** Lowers the signal gain.                                                                                                                                           |
-| **INFO**      | **PRESS**  | **Display % CPU Usage and Scaling Factor.** Displays the relative % CPU usage based on a 100% being the main loop taking more than 40ms (25 frames/s on client) to run, and current scaling factor. |
+| **Button**    | **Action** | **Description**                                                                                                                |
+| ------------- | ---------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| **NOISE FLT** | **PRESS**  | **Adjust Noise Filter (NF).** Increases the squelch floor to ignore background noise. Cycle wraps 0-255.                       |
+| **PLAY**      | **PRESS**  | **Playback.** Stops recording and plays the last ~3 seconds of audio through the speaker (*bug -- currently does not work*).   |
+| **SCALE +**   | **PRESS**  | **Increase Scaling Factor (SF).** Boosts the signal sent to the web app (1x -> 12x) and onscreen visualizer                    |
+| **SCALE -**   | **PRESS**  | **Decrease Scaling Factor (SF).** Lowers the signal gain.                                                                      |
+| **MODE**      | **PRESS**  | **Cycle Through Audio Visualizers.** Displays either a basic audio waveform, horizontal VU bars, and 64 bar spectrum analyzer. |
 
 ### On-Screen Display
 
@@ -137,9 +137,11 @@ Once the device is running, it will display **IP Address** and battery level on 
 
 - **NF LEVEL:** Current Noise Filter level.
 
-- **SF:** Current Scaling Factor level.
+- **SCL:** Current Scaling Factor For Audio Data.
 
-- **CPU:** Current Percent CPU Usage and time to run loop (relative)
+- **MODE:** WAVE, VU METER, SPECTRUM
+
+- **CPU:** Current Relative Percent CPU and time to run loop. The CPU usage is based on a 100% being the main loop taking more than 40ms (25 frames/s on client) to run.
 
 ### Web Interface
 
@@ -155,7 +157,12 @@ Once the device is running, it will display **IP Address** and battery level on 
    
    - **Raw Data API:** `http://192.168.1.59/data` (JSON output).
 
-## 
+## TO-DOs
+
+These are some nice to have features
+
+- More **Professional and Feature Rich VU/Spectrum** Web-apps. Using vibe-coding to create those pages definately shows the limit of the current LLM models.
+- Better Looking colored VU/Spectrum modes 
 
 ## Links & Resources
 
