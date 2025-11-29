@@ -1,7 +1,7 @@
 /**
  * @file Tab5MicTalk.ino
  * @brief M5Stack Tab5 Audio Visualizer and Server (Waveform / VU Meter / Spectrum)
- * @author [Nathan Stevens / Gemini3 Pro/ M5 Mic Example]
+ * @author [Nathan Stevens / Gemini3 Pro] Based on original m5stack mic example
  * @date 2025-11-28
  *
  * HARDWARE: M5Stack Tab5
@@ -244,8 +244,6 @@ void drawWaveform(int16_t *data) {
 void drawVUMeter(int16_t *data) {
     long sum = 0;
     int peak = 0;
-    
-    // Calculate RMS-ish Average and Absolute Peak
     for(int i=0; i<record_length; i++) {
         int val = abs(data[i]);
         if(val > peak) peak = val;
@@ -253,45 +251,54 @@ void drawVUMeter(int16_t *data) {
     }
     int avg = sum / record_length;
 
-    // Scale values to screen width (1280px)
-    int w_top = (peak * scale_factors[scale_idx]) / 2; 
-    int w_bot = (avg * scale_factors[scale_idx]) * 2; 
+    // --- 1. SENSITIVITY ADJUSTMENT ---
+    // Using your requested "/ 10" to prevent hitting the screen edge
+    int w_top = (peak * scale_factors[scale_idx]) / 10; 
+    int w_bot = (avg * scale_factors[scale_idx]) / 5; 
 
-    // Clamp to screen width
     if (w_top > 1280) w_top = 1280;
     if (w_bot > 1280) w_bot = 1280;
 
     int midY = LAYOUT_VISUALIZER_TOP + (LAYOUT_VISUALIZER_HEIGHT / 2);
-    int barHeight = 100;
+    
+    // You can change this height freely now, text will stay centered!
+    int barHeight = 200; 
     int gap = 20;
 
-    // Draw Top Bar (Optimized: Only draw the difference)
+    // --- DRAW TOP BAR ---
     int y1 = midY - gap - barHeight;
     if (w_top > prev_vu_w[0]) {
-        // Growing: Draw White extension
         M5.Display.fillRect(prev_vu_w[0], y1, w_top - prev_vu_w[0], barHeight, WHITE);
     } else if (w_top < prev_vu_w[0]) {
-        // Shrinking: Draw Black erasure
         M5.Display.fillRect(w_top, y1, prev_vu_w[0] - w_top, barHeight, BLACK);
     }
-    prev_vu_w[0] = w_top; // Save state
+    prev_vu_w[0] = w_top;
 
-    // Draw Bottom Bar (Optimized)
+    // --- DRAW BOTTOM BAR ---
     int y2 = midY + gap;
     if (w_bot > prev_vu_w[1]) {
         M5.Display.fillRect(prev_vu_w[1], y2, w_bot - prev_vu_w[1], barHeight, WHITE);
     } else if (w_bot < prev_vu_w[1]) {
         M5.Display.fillRect(w_bot, y2, prev_vu_w[1] - w_bot, barHeight, BLACK);
     }
-    prev_vu_w[1] = w_bot; // Save state
+    prev_vu_w[1] = w_bot;
 
-    // Labels
-    M5.Display.setTextSize(2);
-    M5.Display.setTextColor(LIGHTGREY);
-    M5.Display.setCursor(20, y1 + 35);
-    M5.Display.print("PEAK");
-    M5.Display.setCursor(20, y2 + 35);
-    M5.Display.print("AVG");
+    // --- LABELS (FIXED CENTERING) ---
+    M5.Display.setTextSize(3);
+    // Use Dark Grey so it's readable against the White bar
+    M5.Display.setTextColor(DARKGREY); 
+    
+    // "middle_left" anchors the text vertically in the middle
+    M5.Display.setTextDatum(middle_left); 
+    
+    // Draw PEAK (Calculated center: y1 + half height)
+    M5.Display.drawString("PEAK", 20, y1 + (barHeight / 2));
+    
+    // Draw AVG (Calculated center: y2 + half height)
+    M5.Display.drawString("AVG", 20, y2 + (barHeight / 2));
+    
+    // Reset Datum and Color for other parts of the app
+    M5.Display.setTextDatum(top_center); 
     M5.Display.setTextColor(WHITE);
 }
 
